@@ -1,0 +1,100 @@
+function getUrlVar(name)
+{
+    var vars = [], hash;
+    var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+    for(var i = 0; i < hashes.length; i++)
+    {
+        hash = hashes[i].split('=');
+        vars.push(hash[0]);
+        vars[hash[0]] = hash[1];
+    }
+    return vars['name'];
+}
+$(document).ready(function(){
+	/*
+    $.ajax({
+        url: '/bg/get_category',
+        type: 'post',
+        dataType: 'json',
+        success: function(data){
+            for(var i in data.category){
+                $('.header_search_category_selector').append(
+                    '<option value="'+data.category[i].cat_id+'">'+data.category[i].category+'</option>'
+                );
+				$('.header_search_category_selector').val($.getUrlVar('category'))	
+            }
+        }
+    })
+	*/
+	$('.header_search_bar').focus(function(){
+		if($(this).val() == '在此搜尋桌上遊戲') $(this).val('');
+	}).blur(function(){
+		$(document).die();
+		if($(this).val() == '') $(this).val('在此搜尋桌上遊戲');
+	});
+
+
+	if(getUrlVar('people'))$('#people').val(getUrlVar('people'))
+	if(getUrlVar('age'))$('#age').val(getUrlVar('age'))	
+	
+});
+
+
+function checkForm()
+{
+	
+	if($('.header_search_bar').val() == '在此搜尋桌上遊戲') $('.header_search_bar').val('');
+	
+	
+}
+
+var timeStamp=0;
+function searchPlayingBg(){
+	
+	timeStamp++;
+	var bgName = $('.header_search_bar').val();
+
+	if ( bgName == '' ) {
+		$('#bg_search_games_search').detach();
+		return false;
+	}
+$.post("/bg_controller/search",{name:bgName,timeStamp:timeStamp},function(data){
+	
+	if(data.timeStamp>=timeStamp)
+	{
+		$('#bg_search_games_anchor').html('<div id="bg_search_games_search"><ul id="game_list"></ul></div>');		
+		if(data.result==true)
+		{
+			for(key in data.bgList)
+			{
+				
+				$('#game_list').append(
+				'<li id="game_'+data.bgList[key].bid+'">'+
+					'<a href="#" onmousemove="$(\'#game_'+data.bgList[key].bid+'\').css(\'background\', \'#DDD\');"'+
+								 'onmouseout="$(\'#game_'+data.bgList[key].bid+'\').css(\'background\', \'white\');"'+
+								 'onmousedown="addGames(\''+data.bgList[key].cha_name+'\',\''+data.bgList[key].bid+'\');">'+
+					'<div>'+data.bgList[key].cha_name+
+					'</div></a>'+
+					'</li>'
+				
+				);
+			}
+			
+		}
+		else
+		{
+			$('#game_list').append('<li>抱歉，找不到這款遊戲...<a href="#" onmousedown="window.open(\'/bg/create\');"> 現在新增？ </a></li>');
+			
+		}	
+	}
+	},'json');
+
+}
+$( window ).on("unload",function() {
+  $.post('/welcome/log_record',{url:'/welcome/log_off'},function(){}
+               
+              ,'json')
+});
+
+
+

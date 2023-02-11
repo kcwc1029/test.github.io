@@ -1,0 +1,316 @@
+(function($){
+	$.extend({
+		getUrlVars: function(){
+			var vars = [], hash;
+			//
+			var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+			//user for location.hash
+			//var hashes = window.location.href.slice(window.location.href.indexOf('#') + 1).split('&');
+			
+			for(var i = 0; i < hashes.length; i++){
+				hash = hashes[i].split('=');
+				vars.push(hash[0]);
+				vars[hash[0]] = hash[1];
+			}
+			
+			return vars;
+		},
+		getUrlVar: function(name){
+			return $.getUrlVars()[name];
+		}
+	});
+
+	$.fn.extend({
+		pmAwesome: function(){
+			return this.each(function(){
+				$(this).children('.awesome_decorator').detach();
+				var awesome = $(this).html();
+				$(this).css({
+					'font-size':12,
+					'color':'#FFF',
+					'background':'#F00',
+					'min-width':16,
+					'height':17,
+					'text-align':'center',
+					'position':'absolute'
+				});
+				
+				$(this).append(
+					'<div class="awesome_decorator" style="background:#F00; height:15px; width:1px; position:absolute; left:-1px; top:1px;"></div>'+
+					'<div class="awesome_decorator" style="background:#F00; height:15px; width:1px; position:absolute; right:-1px; top:1px;"></div>'+
+					'<div class="awesome_decorator" style="background:url(./images/awesome_arrow.png); position:absolute; bottom:-4px; left:4px; width:8px; height:4px;"></div>'
+				);
+			});
+		}
+	});
+})(jQuery);
+
+function pmCommentLoad(trigger, target, positionTop, positionLeft, setArrow){
+	
+	$('#'+trigger).mouseover(function(){
+		$('#'+target).css({top:positionTop, left:positionLeft}).show();
+	}).mouseout(function(){
+		$('#'+target).hide();
+	});
+	
+	if(setArrow){
+		$('#'+trigger).mouseover(function(){
+			$('#'+target).append('<div class="pm_comment_arrow" style="bottom:-8px;"></div>');
+		}).mouseout(function(){
+			$('#'+target).children('.pm_comment_arrow').detach();
+		});
+	}
+}
+
+function ajaxLoad(target, url, loadingAnimation, varArray){
+	if(!loadingAnimation || loadingAnimation == 'default') loadingAnimation = '/images/pm_loading.gif';
+	
+	//$.putUrlVars(varArray);
+	
+	$('#'+target).html('<img src="' + loadingAnimation + '"/>');
+	$.ajax({
+		url: url,
+		dataType: 'html',
+		success: function(data){
+			$('#'+target).html(data);
+		}
+	});
+}
+
+function ajaxAppend(target, url, loadingAnimation, varArray){
+	if(!loadingAnimation || loadingAnimation == 'default') loadingAnimation = '/images/pm_loading.gif';
+	
+	//$.putUrlVars(varArray);
+	
+	$.ajax({
+		url: url,
+		dataType: 'html',
+		success: function(data){
+			$('#'+target).append(data);
+		}
+	});
+}
+
+function ajaxLoadScript(url){
+	$.ajax({
+		url: url,
+		dataType: 'html',
+		success: function(data){
+			$('body').append('<script>'+data+'</script>');
+		}
+	})
+}
+
+function pmPopupWindowConfirm(string, title, buttonText){
+	var left = Math.round((parseInt($(window).width(), 10)/2));
+	var top = (parseInt($(window).scrollTop(),10));
+	
+	if(!title) title = 'pasteMe!';
+	if(!string) string = $.i18n.prop('i18n_pasteme_error');
+	if(!buttonText) buttonText = $.i18n.prop('i18n_confirm');
+	
+	$('.pmPopupWindow').detach();
+	$('.pmPopupWindow').unbind('pmPopupWindowCloseEvent');
+	
+	$('body').append(
+		'<div class="pmPopupWindow" style="left:'+ (left-250) +'px; top:'+ (top+100) +'px;">'+
+			'<div class="paddingTen" >'+
+				'<div class="pmPopupWindowContainer">'+
+					'<div class="pmPopupWindowHeader">'+
+						'<div class="paddingFive">'+title+'</div>'+
+					'</div>'+
+					'<div class="pmPopupWindowContent">'+
+						'<div class="paddingTen"><div id="pmPopupWindowAnchor">'+ string +'</div></div>'+
+					'</div>'+
+					'<div class="pmPopupWindowButton">'+
+						'<input type="button" value="'+ buttonText +'" style="font-size:14px;" id="pmPopupWindowClose" class="pm_button" />'+
+					'</div>'+
+				'</div>'+
+			'</div>'+
+		'</div>'
+	);
+	
+	$('#pmPopupWindowClose').die('click');
+	$('#pmPopupWindowClose').live('click', pmPopupWindowClose);
+	
+	function pmPopupWindowClose(){
+		$('.pmPopupWindow').fadeOut();
+		$('.pmPopupWindow').trigger('pmPopupWindowCloseEvent');
+		
+	}
+}
+
+function pmPopupWindowConfirmWithPage(url, title, buttonText){
+	
+	var left = Math.round((parseInt($(window).width(), 10)/2));
+	var top = (parseInt($(window).scrollTop(),10));
+	
+	if(!title) title = 'pasteMe!';
+	if(!url) url = $.i18n.prop('i18n_pasteme_error');
+	if(!buttonText) buttonText = $.i18n.prop('i18n_confirm');
+	
+	$('.pmPopupWindow').detach();
+	$('.pmPopupWindow').unbind('pmPopupWindowCloseEvent');
+	
+	$('body').append(
+		'<div class="pmPopupWindow" style="left:'+ (left-250) +'px; top:'+ (top+100) +'px;">'+
+			'<div class="paddingTen" >'+
+				'<div class="pmPopupWindowContainer">'+
+					'<div class="pmPopupWindowHeader">'+
+						'<div class="paddingFive">'+title+'</div>'+
+					'</div>'+
+					'<div class="pmPopupWindowContent">'+
+						'<div id="pmPopupWindowAnchor" class="paddingTen"></div>'+
+					'</div>'+
+					'<div class="pmPopupWindowButton">'+
+						'<input type="button" value="'+ buttonText +'" style="font-size:14px;" id="pmPopupWindowClose" class="pm_button" />'+
+					'</div>'+
+				'</div>'+
+			'</div>'+
+		'</div>'
+	);
+	
+	ajaxLoad('pmPopupWindowAnchor', url);
+	$('#pmPopupWindowClose').die('click');
+	$('#pmPopupWindowClose').live('click', pmPopupWindowClose);
+	
+	function pmPopupWindowClose(){
+		$('.pmPopupWindow').fadeOut();
+		$('.pmPopupWindow').trigger('pmPopupWindowCloseEvent');
+		
+	}
+}
+
+function pmPopupWindowYesNo(string, title, buttonYesText, buttonNoText){
+	var left = Math.round((parseInt($(window).width(), 10)/2));
+	var top = (parseInt($(window).scrollTop(),10));
+	
+	if(!title) title = 'pasteMe!';
+	if(!string) string = $.i18n.prop('i18n_pasteme_error');
+	if(!buttonYesText) buttonYesText = $.i18n.prop('i18n_confirm');
+	if(!buttonNoText) buttonNoText = $.i18n.prop('i18n_cancel');
+	
+	$('.pmPopupWindow').detach();
+	$('.pmPopupWindow').unbind('pmPopupWindowYesEvent');
+	$('.pmPopupWindow').unbind('pmPopupWindowNoEvent');
+	
+	$('body').append(
+		'<div class="pmPopupWindow" style="left:'+ (left-250) +'px; top:'+ (top+100) +'px;">'+
+			'<div class="paddingTen" >'+
+				'<div class="pmPopupWindowContainer">'+
+					'<div class="pmPopupWindowHeader">'+
+						'<div class="paddingFive">'+title+'</div>'+
+					'</div>'+
+					'<div class="pmPopupWindowContent">'+
+						'<div class="paddingTen"><div id="pmPopupWindowAnchor">'+ string +'</div></div>'+
+					'</div>'+
+					'<div class="pmPopupWindowButton">'+
+						'<input type="button" value="'+ buttonYesText +'" style="font-size:14px;" id="pmPopupWindowYes" class="pm_button" />'+
+						'<input type="button" value="'+ buttonNoText +'" style="font-size:14px; margin-left:5px;" id="pmPopupWindowNo" class="pm_button" />'+
+					'</div>'+
+				'</div>'+
+			'</div>'+
+		'</div>'
+	);
+	
+	$('#pmPopupWindowYes').die('click');
+	$('#pmPopupWindowNo').die('click');
+	$('#pmPopupWindowYes').live('click', pmPopupWindowYes);
+	$('#pmPopupWindowNo').live('click', pmPopupWindowNo);
+	
+	function pmPopupWindowYes(){
+		$('.pmPopupWindow').fadeOut();
+		$('.pmPopupWindow').trigger('pmPopupWindowYesEvent');
+		
+	}
+	
+	function pmPopupWindowNo(){
+		$('.pmPopupWindow').fadeOut();
+		$('.pmPopupWindow').trigger('pmPopupWindowNoEvent');
+		
+	}
+}
+
+
+function pmPopupWindowYesNoWithPage(url, title, buttonYesText, buttonNoText){
+	
+	var left = Math.round((parseInt($(window).width(), 10)/2));
+	var top = (parseInt($(window).scrollTop(),10));
+	
+	if(!title) title = 'pasteMe!';
+	if(!url) url = $.i18n.prop('i18n_pasteme_error');
+	if(!buttonYesText) buttonYesText = $.i18n.prop('i18n_confirm');
+	if(!buttonNoText) buttonNoText = $.i18n.prop('i18n_cancel');
+	
+	$('.pmPopupWindow').detach();
+	$('.pmPopupWindow').unbind('pmPopupWindowYesEvent');
+	$('.pmPopupWindow').unbind('pmPopupWindowNoEvent');
+	
+	
+	$('body').append(
+		'<div class="pmPopupWindow" style="left:'+ (left-250) +'px; top:'+ (top+100) +'px;">'+
+			'<div class="paddingTen" >'+
+				'<div class="pmPopupWindowContainer">'+
+					'<div class="pmPopupWindowHeader">'+
+						'<div class="paddingFive">'+title+'</div>'+
+					'</div>'+
+					'<div class="pmPopupWindowContent">'+
+						'<div class="paddingTen"><div id="pmPopupWindowAnchor"></div></div>'+
+					'</div>'+
+					'<div class="pmPopupWindowButton">'+
+						'<input type="button" value="'+ buttonYesText +'" style="font-size:14px;" id="pmPopupWindowYes" class="pm_button" />'+
+						'<input type="button" value="'+ buttonNoText +'" style="font-size:14px; margin-left:5px;" id="pmPopupWindowNo" class="pm_button" />'+
+					'</div>'+
+				'</div>'+
+			'</div>'+
+		'</div>'
+	);
+	
+	ajaxLoad('pmPopupWindowAnchor', url);
+	$('#pmPopupWindowYes').die('click');
+	$('#pmPopupWindowNo').die('click');
+	$('#pmPopupWindowYes').live('click', pmPopupWindowYes);
+	$('#pmPopupWindowNo').live('click', pmPopupWindowNo);
+	
+	function pmPopupWindowYes(){
+		$('.pmPopupWindow').fadeOut();
+		$('.pmPopupWindow').trigger('pmPopupWindowYesEvent');
+		
+	}
+	
+	function pmPopupWindowNo(){
+		$('.pmPopupWindow').fadeOut();
+		$('.pmPopupWindow').trigger('pmPopupWindowNoEvent');
+		
+	}
+}
+
+function pmCheckImageType(filename){
+	var re = /\.(jpg|jpeg|png|gif)$/i;
+	if(!re.test(filename)){
+		return false;
+	}else{
+		return true;
+	}
+}
+
+function parseStringWithHttpFormat(stringWithHttpFormat){
+				
+	var httpStart = stringWithHttpFormat.indexOf('http://', 0);
+	
+	if(httpStart == -1){ return stringWithHttpFormat; }
+	
+	var httpEnd = stringWithHttpFormat.indexOf(' ', httpStart);
+	if(httpEnd == -1) httpEnd = stringWithHttpFormat.length;
+	
+	return stringWithHttpFormat.substr(0,httpStart) + 
+	       '<a target="_blank" href="'+stringWithHttpFormat.substr(httpStart, httpEnd - httpStart)+'">' + 
+		       stringWithHttpFormat.substr(httpStart, httpEnd - httpStart) +
+		   '<a>' + 
+		   stringWithHttpFormat.substr(httpEnd,stringWithHttpFormat.length-httpEnd);
+				
+}
+
+
+
+
